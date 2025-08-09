@@ -1,0 +1,45 @@
+name: 'Warwick AI Competitions'
+description: 'GitHub Action used to manage Warwick AI competition leaderboards'
+branding:
+  icon: 'award'
+  color: 'purple'
+inputs:
+  project:
+    description: 'Name of the project which is being scored by the action (e.g. "wordle")'
+    required: true
+  python_version:
+    description: 'Python version'
+    required: false
+    default: '3.13'
+outputs:
+  score:
+    description: 'Calculated competition score'
+    value: ${{ steps.score.outputs.score }}
+  success_rate:
+    description: 'Percentage of tests passed'
+    value: ${{ steps.score.outputs.success_rate }}
+  details:
+    description: 'JSON with detailed results'
+    value: ${{ steps.score.outputs.details }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python_version }}
+    - name: Install Dependencies
+      shell: bash
+      run: pip install -e .
+    - name: Score Project
+      id: score
+      shell: bash
+      run: |
+        python .github/submit.py
+        cat score.txt >> "$GITHUB_OUTPUT"
+    - name: Generate Summary
+      shell: bash
+      run: |
+        echo "## WAI Competition: ${{ inputs.project }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Score:** ${{ steps.score.outputs.score }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Tests:** ${{ steps.score.outputs.success_rate }}% passed" >> $GITHUB_STEP_SUMMARY
