@@ -5,11 +5,11 @@ GitHub Action used to manage Warwick AI's competition leaderboards.
 
 CI scores each submission with the team's own copy of the scoring code, so leaderboard scores can be faked. `results/` re-scores every team with the official template's scoring code instead, each in its own container with no network or secrets.
 
-1. Download each team's best submission from before the deadline, from the website repo:
+1. Download each team's best submission from before the deadline, from the website repo (it reads `BLOB_READ_WRITE_TOKEN` from the website's `.env`):
    ```sh
-   PROJECT_ID=snake BLOB_READ_WRITE_TOKEN=... npx astro db execute db/download-snapshots.ts --remote
+   PROJECT_ID=snake npx astro db execute db/download-snapshots.ts --remote
    ```
-2. Clear those credentials from your shell (the next step runs students' code), then run:
+2. Re-score them. The containers only ever see the snapshots and the template, never the website's `.env`, so don't run downloaded code any other way:
    ```sh
    STUDENT_FILES="myAI.py myEnv.py model.zip" \
    EXTRA_PACKAGES="gymnasium>=1.0 stable-baselines3>=2.4" \
