@@ -7,7 +7,7 @@ CI scores each submission with the team's own copy of the scoring code, so leade
 
 1. Download each team's best submission from before the deadline, from the website repo (it reads `BLOB_READ_WRITE_TOKEN` from the website's `.env`):
    ```sh
-   PROJECT_ID=snake npx astro db execute db/download-snapshots.ts --remote
+   PROJECT_ID=snake PICK=best npx astro db execute db/download-snapshots.ts --remote
    ```
 2. Re-score them. The containers only ever see the snapshots and the template, never the website's `.env`, so don't run downloaded code any other way:
    ```sh
