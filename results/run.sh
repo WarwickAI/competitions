@@ -18,6 +18,17 @@ CPUS=${CPUS:-2}
 HERE=$(cd "$(dirname "$0")" && pwd)
 IMAGE=wai-results
 
+# Teams build against the latest template, so a stale checkout fails them on
+# anything added since. A detached HEAD is taken as choosing that version
+if upstream=$(git -C "$TEMPLATE" rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null); then
+  git -C "$TEMPLATE" fetch --quiet
+  behind=$(git -C "$TEMPLATE" rev-list --count "HEAD..$upstream")
+  if [ "$behind" -gt 0 ]; then
+    echo "$TEMPLATE is $behind commit(s) behind $upstream, so pull it first" >&2
+    exit 1
+  fi
+fi
+
 # A clean copy of the template's last commit, so local edits and untracked
 # files (venvs, trained models) don't leak in
 official=$(mktemp -d)
@@ -30,6 +41,17 @@ docker build --quiet --tag "$IMAGE" \
   --build-context template="$official" \
   --build-arg EXTRA_PACKAGES="$EXTRA_PACKAGES" \
   "$HERE" >/dev/null
+
+missing=$(docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
+  --read-only -v "$SNAPSHOTS":/snapshots:ro --entrypoint python "$IMAGE" /opt/packages.py)
+if [ -n "$missing" ]; then
+  echo "Teams declared packages the image doesn't have, so add any their bots import to EXTRA_PACKAGES:"
+  sed 's/^/  /' <<<"$missing"
+  if [ -t 0 ]; then
+    read -r -p "Score anyway? [y/N] " answer
+    [[ $answer == [yY]* ]] || exit 1
+  fi
+fi
 
 results="$SNAPSHOTS/results.csv"
 mkdir -p "$SNAPSHOTS/logs"

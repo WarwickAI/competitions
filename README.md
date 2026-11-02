@@ -17,7 +17,8 @@ CI scores each submission with the team's own copy of the scoring code, so leade
    ```
 
 - `STUDENT_FILES` are the template files teams are meant to edit. Every other template file comes from the template's last commit, and any files a team added are kept.
-- `EXTRA_PACKAGES` are dependencies the template leaves commented out. Everything is installed into the image up front, since containers have no network.
+- `EXTRA_PACKAGES` are dependencies the template doesn't install, such as ones it leaves commented out, or ones teams added to their own `pyproject.toml` (CI installs those, but here it's replaced with the official one). Before scoring, `run.sh` lists every package teams declared that the image doesn't have, so add the ones their bots import. Everything is installed into the image up front, since containers have no network.
+- The template has to be up to date with its upstream, since teams build against its latest version. To score against an older version instead, check out that commit.
 - `TIMEOUT` (seconds per team, default 3600), `MEMORY` (default `4g`) and `CPUS` (default `2`) set the per-team limits.
 
 Results go to `results.csv` in the snapshots folder, with each team's CI score, final score, and any template files they edited (these were replaced with the official ones, so check why). Each team's output is in `logs/`.

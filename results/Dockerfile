@@ -16,7 +16,7 @@ RUN python -c "import tomllib; print('\n'.join(tomllib.load(open('/tmp/pyproject
     && printf '%s\n' $EXTRA_PACKAGES >> /tmp/requirements.txt \
     && pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r /tmp/requirements.txt
 
-COPY score.py /opt/score.py
+COPY score.py packages.py /opt/
 RUN useradd --create-home runner
 USER runner
 ENTRYPOINT ["python", "/opt/score.py"]
